@@ -1,0 +1,28 @@
+version: '3'
+
+
+services:
+  initializer:
+    build: mongo_init
+    image: curlyspeaker/mongo_init
+
+  mongo0: &mongo
+    image: mongo
+    command: [mongod, --bind_ip_all, --replSet, rs]
+
+  mongo1:
+    <<: *mongo
+
+  mongo2:
+    <<: *mongo
+
+  chat:
+    build: web
+    image: curlyspeaker/web_chat:latest
+    ports:
+      - 80:8888
+    deploy:
+      replicas: 1
+    environment:
+      DB_URI: mongodb://mongo0,mongo1,mongo2/?replicaSet=rs
+
